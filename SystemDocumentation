@@ -1,0 +1,36 @@
+Interface
+- IItem and IReservation
+
+Concrete classes 
+- All classes (eve)
+
+Polymorphism 
+- still need to do
+
+SOLID Principles 
+- Single Responsibility: Classes follow this
+- Open and Closed Principle: Inheritance (any new class can use existing classes as parent)
+- Liskov Substitution: (Abstraction - still need to do)
+- Interface Segregation: IItem and IReservation follows this principle
+- Dependency Inversion: All classes follow this principle
+
+
+Delegates and Events
+- ReservationNotify class
+
+
+Generics 
+- Search class
+
+Design Patterns - 3 uses 
+- Factory: ReservationFactory class
+- Builder: User class
+- 
+
+
+User Interface 
+- Still needs to be done in program
+
+
+
+
