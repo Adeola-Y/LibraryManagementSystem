@@ -18,20 +18,17 @@ namespace LibraryManagementSystem.Services
 
         public UserManagement UserLoan { get; set; }
 
-        public bool InUse;
-
 
         public Loans(IMedia item, DateOnly loanDate, UserManagement userLoan)
         {
             Item = item;
             LoanDate = loanDate;
-            InUse = true;
             UserLoan = userLoan;
         }
         public bool ItemOverdue()
         {
             // used FromDateTime to get only the date and not the time to see if the due date for returns have been exceeded
-            if (InUse && DateOnly.FromDateTime(DateTime.Now) > Item.DueDate)
+            if (Item.InUse && DateOnly.FromDateTime(DateTime.Now) > Item.DueDate)
             {
                 OverdueFine();
             }
@@ -63,7 +60,6 @@ namespace LibraryManagementSystem.Services
 
         public void MarkAsReturned()
         {
-            InUse = false;
             Item.InUse = false;
         }
     }

@@ -27,7 +27,6 @@ namespace LibraryManagementSystem.Managers
             if (user != null && !UserExists(user.UserId))
             {
                 users.Add(user);
-                Console.WriteLine($"User added successfully {user}");
             }
             else
             {

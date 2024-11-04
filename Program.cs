@@ -106,7 +106,8 @@ namespace LibraryManagementSystem
                         
                         books[bookChoice - 1].Loan();
                         Loans borrow = new Loans(books[bookChoice - 1], DateOnly.FromDateTime(DateTime.Now), selectedUser);
-                        borrow.GetDetails();
+                        selectedUser.BorrowItem(borrow);
+                        
                         
                         break;
 
@@ -125,7 +126,7 @@ namespace LibraryManagementSystem
                         int dvdChoice = int.Parse(Console.ReadLine());
                         dvds[dvdChoice - 1].Loan();
                         Loans newLoan = new Loans(dvds[dvdChoice - 1], DateOnly.FromDateTime(DateTime.Now), selectedDvdUser);
-                        newLoan.GetDetails();
+                        selectedDvdUser.BorrowItem(newLoan);
                         break;
 
                     case "3":
@@ -143,7 +144,7 @@ namespace LibraryManagementSystem
                         int magazineChoice = int.Parse(Console.ReadLine());
                         magazines[magazineChoice - 1].Loan();
                         Loans MagazineLoan = new Loans(magazines[magazineChoice - 1], DateOnly.FromDateTime(DateTime.Now), selectedMagazineUser);
-                        MagazineLoan.GetDetails();
+                        selectedMagazineUser.BorrowItem(MagazineLoan);
                         break;
 
                     case "4":
@@ -271,17 +272,13 @@ namespace LibraryManagementSystem
                     case "6": // Automatically handle returns for all loaned items by a specific user
                         Console.WriteLine("Select User:");
                         UserManagement returnUser = userManager.SelectUser();
-
                         List<Loans> loanedItems = returnUser.LoanedItems; // Get all items the selected user has loaned
-
                         foreach (Loans loan in loanedItems)
                         {
                             if (returnUser.LoanedItems.Contains(loan))
                             {
                                 loan.MarkAsReturned();
-                                Return itemReturn = new Return(loan, DateOnly.FromDateTime(DateTime.Now));
                                 returnUser.LoanedItems.Remove(loan); // Remove from the loaned items list
-
                                 Console.WriteLine($"The item '{loan.Item.Title}' loaned by {returnUser.Name} has been automatically returned.");
                             }
                             else
