@@ -1,33 +1,30 @@
-﻿using LibraryManagementSystem.Interfaces;
+﻿using System;
+using LibraryManagementSystem.Interfaces;
 using LibraryManagementSystem.Managers;
-using LibraryManagementSystem.Services;
-using System;
 
-public class Returns : Loans
+namespace LibraryManagementSystem.Services
 {
-    public DateOnly ReturnDate { get; set; }
-
-    public Returns(IMedia returnedItem, DateOnly returnDate, UserManagement userLoan) : base(returnedItem, DateOnly.FromDateTime(DateTime.Now), userLoan) 
+    public class Return
     {
-        ReturnDate = returnDate;
-    }
+        public Loans Loan { get; set; }
+        public DateOnly ReturnDate { get; set; }
 
-    public void ReturnItem()
-    {
-        //checks if item is in users account first
-        if(Item.InUse)
+        public Return(Loans loan, DateOnly returnDate)
         {
-            // changes it to false to indicate to returned
-            Item.InUse = false; 
-            // calls user mangement function to remove item from loan list
-            UserLoan.ReturnItem(this);
-            Console.WriteLine($"{Item.Title} has been returned. Under: {UserLoan.Name} at {ReturnDate}");
+            Loan = loan;
+            ReturnDate = returnDate;
+            ProcessReturn();
         }
-        else
-        {
-            Console.WriteLine($"{UserLoan.Name} does not have {Item.Title} to return or it is already returned.");
-        }
-        
-    }
 
+        private void ProcessReturn()
+        {
+            // Mark the item as returned
+            Loan.MarkAsReturned();
+
+            // Remove loan from user's LoanedItems
+            Loan.UserLoan.ReturnItem(Loan);
+
+            Console.WriteLine($"Item '{Loan.Item.Title}' has been returned by {Loan.UserLoan.Name} on {ReturnDate}.");
+        }
+    }
 }

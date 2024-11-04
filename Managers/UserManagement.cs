@@ -62,15 +62,15 @@ namespace LibraryManagementSystem.Managers
             }
         }
 
-        // displays each loaned item for the user.
         public void DisplayLoanedItems()
         {
-            Console.WriteLine($"list of loaned items from {Name}:");
-            foreach (Loans item in LoanedItems)
+            Console.WriteLine($"List of loaned items for {Name}:");
+            foreach (Loans loan in LoanedItems)
             {
-                Console.WriteLine($"{item}");
+                Console.WriteLine(loan.UserLoan); 
             }
         }
+
 
         //  all reservations for the user.
         public void DisplayReservations()

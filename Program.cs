@@ -1,8 +1,10 @@
 ﻿using LibraryManagementSystem.Interfaces;
 using LibraryManagementSystem.Managers;
+using LibraryManagementSystem.Managers.LibraryManagementSystem;
 using LibraryManagementSystem.Media;
 using LibraryManagementSystem.Notifications;
 using LibraryManagementSystem.Payments;
+using LibraryManagementSystem.Services;
 using System;
 using System.Collections.Generic;
 
@@ -17,28 +19,34 @@ namespace LibraryManagementSystem
             INotifier smsNotifier = new SMSNotification();
             FinePaymentManager finePaymentManager = new FinePaymentManager();
             AccountManager accountManager = new AccountManager();
+            UserProgramManagement userManager = new UserProgramManagement(accountManager);
+            UserManagement userManagement = new UserManagement();
             ReservationManager reservationManager = new ReservationManager();
 
             // Create user accounts
-            User user1 = new UserAccount()
+            User ella = new UserAccount()
                 .UserName("Ella Charles")
                 .UserEmail("ella.charles@example.com")
                 .UserPhone("204-123-4567")
                 .UserPassword("HYUEU45jk")
                 .UserCreate();
+            accountManager.AddUser(ella);
 
-            Console.WriteLine("Adding user1:");
-            accountManager.AddUser(user1);
-
-            User user2 = new UserAccount()
+            User adeola = new UserAccount()
                 .UserName("Adeola Yusuf")
                 .UserEmail("adeola.yusuf@example.com")
                 .UserPhone("204-891-0112")
                 .UserPassword("babyShark123")
                 .UserCreate();
+            accountManager.AddUser(adeola);
 
-            Console.WriteLine("Adding user2:");
-            accountManager.AddUser(user2);
+            User bukunmi = new UserAccount()
+                .UserName("Bukunmi Leke-Atere")
+                .UserEmail("bukunmi-atere@example.com")
+                .UserPhone("204-453-0515")
+                .UserPassword("icee_wrist234")
+                .UserCreate();
+            accountManager.AddUser(bukunmi);
 
             // Media
             IMedia book1 = new Books("J.K. Rowling", "Harry Potter", "Fantasy", 1, 500, DateOnly.FromDateTime(DateTime.Now).AddDays(30), "Book", 20.00m, emailNotifier);
@@ -53,12 +61,14 @@ namespace LibraryManagementSystem
             List<IMedia> magazines = new List<IMedia> { magazine1, magazine2 };
 
             Console.WriteLine("Creating a reservation for book1:");
-            BaseReservation bookReservation = new BaseReservation(user1, book1);
+            BaseReservation bookReservation = new BaseReservation(adeola, book1);
             reservationManager.AddReservation(bookReservation);
-            Console.WriteLine($"Reservation made for {user1.Name} on book '{book1.Title}'");
+            userManagement.MakeReservation(bookReservation);
+            Console.WriteLine($"Reservation made for {adeola.Name} on book '{book1.Title}'");
 
             Console.WriteLine("Completing book reservation for user1:");
             reservationManager.CompleteReservation(bookReservation);
+            userManagement.MakeReservation(bookReservation);
             Console.WriteLine($"Reservation status for '{book1.Title}': {bookReservation.Status}");
 
             bool isRunning = true;
@@ -70,8 +80,9 @@ namespace LibraryManagementSystem
                 Console.WriteLine("2. Loan a DVD");
                 Console.WriteLine("3. Loan a Magazine");
                 Console.WriteLine("4. Pay Fine");
-                Console.WriteLine("5. Manage Reservations"); // New option for managing reservations
-                Console.WriteLine("6. Exit");
+                Console.WriteLine("5. Manage Reservations");
+                Console.WriteLine("6. Returns");
+                Console.WriteLine("7. Exit");
                 Console.Write("Choose an option: ");
 
                 string choice = Console.ReadLine();
@@ -79,6 +90,9 @@ namespace LibraryManagementSystem
                 switch (choice)
                 {
                     case "1":
+                        Console.WriteLine("Select User:");
+                        UserManagement selectedUser = userManager.SelectUser();
+
                         Console.WriteLine("Books:");
                         for (int i = 0; i < books.Count; i++)
                         {
@@ -89,10 +103,16 @@ namespace LibraryManagementSystem
                         }
                         Console.Write("Select the book you want to loan: ");
                         int bookChoice = int.Parse(Console.ReadLine());
+                        
                         books[bookChoice - 1].Loan();
+                        Loans borrow = new Loans(books[bookChoice - 1], DateOnly.FromDateTime(DateTime.Now), selectedUser);
+                        borrow.GetDetails();
+                        
                         break;
 
                     case "2":
+                        Console.WriteLine("Select User:");
+                        UserManagement selectedDvdUser = userManager.SelectUser();
                         Console.WriteLine("DVDs:");
                         for (int i = 0; i < dvds.Count; i++)
                         {
@@ -104,9 +124,13 @@ namespace LibraryManagementSystem
                         Console.Write("Select the dvd you want to loan: ");
                         int dvdChoice = int.Parse(Console.ReadLine());
                         dvds[dvdChoice - 1].Loan();
+                        Loans newLoan = new Loans(dvds[dvdChoice - 1], DateOnly.FromDateTime(DateTime.Now), selectedDvdUser);
+                        newLoan.GetDetails();
                         break;
 
                     case "3":
+                        Console.WriteLine("Select User:");
+                        UserManagement selectedMagazineUser = userManager.SelectUser();
                         Console.WriteLine("Magazines:");
                         for (int i = 0; i < magazines.Count; i++)
                         {
@@ -118,6 +142,8 @@ namespace LibraryManagementSystem
                         Console.Write("Select the magazine you want to loan: ");
                         int magazineChoice = int.Parse(Console.ReadLine());
                         magazines[magazineChoice - 1].Loan();
+                        Loans MagazineLoan = new Loans(magazines[magazineChoice - 1], DateOnly.FromDateTime(DateTime.Now), selectedMagazineUser);
+                        MagazineLoan.GetDetails();
                         break;
 
                     case "4":
@@ -202,22 +228,27 @@ namespace LibraryManagementSystem
                                 IMedia mediaToReserve = books[reserveBookChoice - 1];
 
                                 // Create a reservation
-                                BaseReservation reservation = new BaseReservation(user1, mediaToReserve);
+                                BaseReservation reservation = new BaseReservation(ella, mediaToReserve);
                                 reservationManager.AddReservation(reservation);
-                                Console.WriteLine($"Reservation made for {user1.Name} on '{mediaToReserve.Title}'");
+                                Console.WriteLine($"Reservation made for {ella.Name} on '{mediaToReserve.Title}'");
 
                                 break;
 
                             case "2": // View Active Reservations
-                                Console.WriteLine("Active Reservations:");
-                                List<IReservation> activeReservations = reservationManager.GetActiveReservations(); // Ensure this method returns List<IReservation>
+                                Console.WriteLine("Select User:");
+                                UserManagement reservationUser = userManager.SelectUser();
 
-                                foreach (var res in activeReservations)
+                                Console.WriteLine($"Active Reservations for {reservationUser.Name}:");
+                                List<IReservation> activeReservations = reservationManager.GetActiveReservations();
+
+                                foreach (IReservation res in activeReservations)
                                 {
-                                    Console.WriteLine($"{res.ReservedBy.Name} reserved '{res.ReservedItem.Title}' on {res.ReservationDate}");
+                                    if (res.ReservedBy.UserId == reservationUser.UserId) // Filter by user
+                                    {
+                                        Console.WriteLine($"{res.ReservedBy.Name} reserved '{res.ReservedItem.Title}' on {res.ReservationDate}");
+                                    }
                                 }
                                 break;
-
                             case "3": // Cancel Reservation
                                 Console.WriteLine("Select reservation to cancel:");
                                 List<IReservation> reservationsToCancel = reservationManager.GetActiveReservations(); // Ensure this method returns List<IReservation>
@@ -234,13 +265,36 @@ namespace LibraryManagementSystem
                                 Console.WriteLine($"Reservation for '{reservationToCancel.ReservedItem.Title}' has been canceled.");
 
                                 break;
-
-                            default:
-                                Console.WriteLine("Invalid reservation option.");
-                                break;
                         }
                         break;
 
+                    case "6": // Automatically handle returns for all loaned items by a specific user
+                        Console.WriteLine("Select User:");
+                        UserManagement returnUser = userManager.SelectUser();
+
+                        List<Loans> loanedItems = returnUser.LoanedItems; // Get all items the selected user has loaned
+
+                        foreach (Loans loan in loanedItems)
+                        {
+                            if (returnUser.LoanedItems.Contains(loan))
+                            {
+                                loan.MarkAsReturned();
+                                Return itemReturn = new Return(loan, DateOnly.FromDateTime(DateTime.Now));
+                                returnUser.LoanedItems.Remove(loan); // Remove from the loaned items list
+
+                                Console.WriteLine($"The item '{loan.Item.Title}' loaned by {returnUser.Name} has been automatically returned.");
+                            }
+                            else
+                            {
+                                Console.WriteLine($"{returnUser.Name} has no loans");
+                            }                           
+                        }
+                        break;
+
+
+                    case "7":
+                        isRunning = false;
+                        break;
                 }
             }
         }

@@ -18,17 +18,20 @@ namespace LibraryManagementSystem.Services
 
         public UserManagement UserLoan { get; set; }
 
+        public bool InUse;
+
+
         public Loans(IMedia item, DateOnly loanDate, UserManagement userLoan)
         {
             Item = item;
             LoanDate = loanDate;
-            Item.InUse = true;
+            InUse = true;
             UserLoan = userLoan;
         }
         public bool ItemOverdue()
         {
             // used FromDateTime to get only the date and not the time to see if the due date for returns have been exceeded
-            if (Item.InUse && DateOnly.FromDateTime(DateTime.Now) > Item.DueDate)
+            if (InUse && DateOnly.FromDateTime(DateTime.Now) > Item.DueDate)
             {
                 OverdueFine();
             }
@@ -52,10 +55,16 @@ namespace LibraryManagementSystem.Services
 
         public void GetDetails()
         {
-            Console.WriteLine($"Details of Loan - Loaner Name: {UserLoan.Name}, Loaner Id: {UserLoan.UserId}, Loan Date: {LoanDate}, Due Date: {Item.DueDate}");
+            Console.WriteLine($"Details of Loan - Loaner Name: {UserLoan.Name}, Loaner Id: {UserLoan.UserId}, Loan Date: {LoanDate}, Due Date: {Item.DueDate}, {Item.ItemType}");
             // adds loaned items to users loan list
             UserLoan.BorrowItem(this);
             Item.GetInfo();
+        }
+
+        public void MarkAsReturned()
+        {
+            InUse = false;
+            Item.InUse = false;
         }
     }
 }
